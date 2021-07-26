@@ -1,0 +1,51 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      java: openjdk8
+    commands:
+      - echo Start build in $ENV environment
+      - echo $HOME
+      - echo $CODEBUILD_SRC_DIR
+      - echo Printing all available env variables
+      - echo $TF_VERSION
+      - echo $ENV_VAR
+#      - echo $deployment_role_arn
+      - echo Entered the install phase...
+#     Install curl
+      - echo Installing Curl...
+      - apt-get install -y curl
+#     Install Terraformm
+      - echo Installing Terraform...
+      - cd /usr/bin
+      - echo Download terraform version...
+      - echo ${TF_VERSION}
+      - curl -s -qL -o terraform.zip https://releases.hashicorp.com/terraform/${TF_VERSION}/terraform_${TF_VERSION}_linux_amd64.zip
+      - unzip -u terraform.zip
+      - export TF_CLI_ARGS="-no-color"
+      - export TF_INPUT=false
+      - export TF_IN_AUTOMATION=true
+      - cd -
+  pre_build:
+    commands:
+      - echo Entered pre_build phase...nothing to do here...
+  build:
+    commands:
+      - echo Entered build phase...nothing to do here...
+      - mvn package
+      - ls
+      - ls target/
+  post_build:
+    commands:
+      - echo Entered the post_build phase...
+      - cd infrastructure
+      - terraform init -backend-config=backend-config.hcl
+      - terraform plan
+      - terraform apply -auto-approve
+artifacts:
+  files:
+    - "*.jar"
+  discard-paths: no
+  base-directory: target/
+
